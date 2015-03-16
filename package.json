@@ -1,6 +1,6 @@
 {
   "name": "simple-di",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "A simple Node.js library for dependency injection.",
   "homepage": "https://github.com/dacarley/simple-di",
   "author": {
