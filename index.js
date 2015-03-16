@@ -2,6 +2,8 @@
 
 var _ = require('lodash');
 var glob = require('glob');
+var caller = require('caller');
+var path = require('path');
 
 var modules = {};
 
@@ -32,10 +34,23 @@ function load(patterns, patterns_to_ignore) {
         patterns = [patterns];
     }
 
+    if (!_.isArray(patterns_to_ignore)) {
+        patterns_to_ignore = [patterns_to_ignore];
+    }
+
+    var cwd = path.dirname(caller());
+
+    // Fix up all the ignore patterns.
+    patterns_to_ignore = _.map(patterns_to_ignore, function(pattern) {
+        return path.resolve(cwd + "/" + pattern);
+    });
+
     patterns.forEach(function(pattern) {
         var files = glob.sync(pattern, {
             nodir: true,
-            ignore: patterns_to_ignore
+            cwd: cwd,
+            ignore: patterns_to_ignore,
+            realpath: true
         });
         files.forEach(function(file) {
             require(file);
@@ -62,7 +77,6 @@ function Instantiator() {
     };
 
     self.get_dependency_chain = function(name, start) {
-        console.log(self.stack);
         self.stack.push(name);
         return self.stack.slice(start || 0).join(' -> ');
     };

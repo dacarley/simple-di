@@ -28,7 +28,7 @@ di.declare('Circle', function(Constants) {
 ```javascript
 var di = require('simple-di');
 
-di.load([__dirname + "/**/*.js"], [__dirname + "/ignore_this_folder/**/*.js"]);
+di.load(["**/*.js"], ["ignore_this_folder/**/*.js"]);
 
 var circle = di.get('Circle');
 

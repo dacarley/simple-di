@@ -2,7 +2,7 @@
 
 var di = require('../../index.js');
 
-di.load([__dirname + "/**/*.js"], [__dirname + "/ignore_this_folder/**/*.js"]);
+di.load(["**/*.js"], ["ignore_this_folder/**/*.js"]);
 
 var circle = di.get('Circle');
 

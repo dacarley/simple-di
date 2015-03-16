@@ -2,7 +2,7 @@
 
 var di = require('../../index.js');
 
-di.load(__dirname + "/**/*.js");
+di.load("**/*.js");
 
 var A = di.get('A');
 
