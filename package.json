@@ -10,7 +10,7 @@
     "name": "David A. Carley",
     "email": "dacarley@gmail.com"
   },
-  { "license" : "BSD-3-Clause" },
+  "license" : "BSD-3-Clause",
   "dependencies": {
     "lodash": "^3.5.0"
   }
