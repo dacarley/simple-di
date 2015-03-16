@@ -32,3 +32,9 @@ di.load([__dirname + "/**/*.js"], [__dirname + "/ignore_this_folder/**/*.js"]);
 var circle = di.get('Circle');
 console.log("A circle with radius 4 has an area of: " + circle.area(4));
 ```
+
+#### Notes:
+
+simple-di will throw an exception if it encounters any circular dependencies.  Resolving these circular dependencies can typically be accomplished through refactoring the dependent modules, and extracting some of the functionality out into a new module.
+
+A future build of simple-di may provide the ability to automatically resolve these circular dependencies through the use of proxy objects.

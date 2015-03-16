@@ -12,12 +12,8 @@ module.exports = {
 };
 
 function get(name) {
-    var module = modules[name];
-    if (!module.instance) {
-        module.instance = instantiate(module);
-    }
-
-    return module.instance;
+    var instantiator = new Instantiator();
+    return instantiator.get(name);
 }
 
 function declare(name, func) {
@@ -43,25 +39,53 @@ function load(patterns, patterns_to_ignore) {
     });
 }
 
-function instantiate(module) {
-    var text = module.func.toString();
-    var open = text.indexOf('(');
-    var close = text.indexOf(')');
-    var params_text = text.substring(open + 1, close);
-    var params = params_text.split(',');
-    params = _(params)
-        .map(function(param) {
-            param = param.trim();
-            return param === "" ? null : get(param);
-        })
-        .compact()
-        .value();
+function Instantiator() {
+    var self = this;
 
-    function injector(args) {
-        return module.func.apply(this, args);
-    }
+    self.stack = [];
 
-    injector.prototype = module.func.prototype;
+    self.get = function(name) {
+        var module = modules[name];
+        if (!module.instance) {
+            module.instance = self.instantiate(module);
+        }
 
-    return new injector(params);
+        return module.instance;
+    };
+
+    self.instantiate = function instantiate(module) {
+        var index = _.findIndex(self.stack, function(item) {
+            return item === module.name;
+        });
+        if (index >= 0) {
+            self.stack.push(module.name);
+            var msg = self.stack.slice(index).join(' -> ');
+            throw new Error("Circular dependency found! " + msg);
+        }
+
+        self.stack.push(module.name);
+
+        var text = module.func.toString();
+        var open = text.indexOf('(');
+        var close = text.indexOf(')');
+        var params_text = text.substring(open + 1, close);
+        var param_names = params_text.split(',');
+        var params = _(param_names)
+            .map(function(param_name) {
+                param_name = param_name.trim();
+                return param_name === "" ? null : self.get(param_name);
+            })
+            .compact()
+            .value();
+
+        function factory(args) {
+            return module.func.apply(this, args);
+        }
+
+        factory.prototype = module.func.prototype;
+
+        var instance = new factory(params);
+        module.instantiating = false;
+        return instance;
+    };
 }
