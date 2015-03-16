@@ -1,6 +1,6 @@
 {
   "name": "simple-di",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A simple Node.js library for dependency injection.",
   "homepage": "https://github.com/dacarley/simple-di",
   "author": {
@@ -26,8 +26,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "license" : "BSD-3-Clause",
+  "license": "BSD-3-Clause",
   "dependencies": {
+    "glob": "^5.0.3",
     "lodash": "^3.5.0"
   }
 }

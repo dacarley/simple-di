@@ -25,12 +25,10 @@ di.declare('Circle', function(Constants) {
 ***app.js***
 ```javascript
 var di = require('di');
-require('constants');
-require('circle');
+
+// Have simple-di require all .js files in this folder and below.
+di.load([__dirname + "/**/*.js"], [__dirname + "/ignore_this_folder/**/*.js"]);
 
 var circle = di.get('Circle');
 console.log("A circle with radius 4 has an area of: " + circle.area(4));
 ```
-
-#### Notes
-In non-trivial usage, you would likely use some system to automatically require all .js files in your source tree, to allow them to register themselves with simple-di.

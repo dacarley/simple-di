@@ -1,12 +1,14 @@
 'use string';
 
 var _ = require('lodash');
+var glob = require('glob');
 
 var modules = {};
 
 module.exports = {
     get: get,
-    declare: declare
+    declare: declare,
+    load: load
 };
 
 function get(name) {
@@ -23,6 +25,22 @@ function declare(name, func) {
         name: name,
         func: func
     }
+}
+
+function load(patterns, patterns_to_ignore) {
+    if (!_.isArray(patterns)) {
+        patterns = [patterns];
+    }
+
+    patterns.forEach(function(pattern) {
+        var files = glob.sync(pattern, {
+            nodir: true,
+            ignore: patterns_to_ignore
+        });
+        files.forEach(function(file) {
+            require(file);
+        });
+    });
 }
 
 function instantiate(module) {
