@@ -7,7 +7,6 @@ simple-di is a very basic dependency injection system for Node.js.
 ***constants.js***
 ```javascript
 var di = require('simple-di');
-
 di.declare('Constants', function() {
     this.pi = 3.14159;
 });
@@ -15,6 +14,7 @@ di.declare('Constants', function() {
 
 ***circle.js***
 ```javascript
+var di = require('simple-di');
 di.declare('Circle', function(Constants) {
     this.area = function(radius) {
         return Constants.pi * radius * radius;
@@ -24,7 +24,7 @@ di.declare('Circle', function(Constants) {
 
 ***app.js***
 ```javascript
-var di = require('di');
+var di = require('simple-di');
 
 // Have simple-di require all .js files in this folder and below.
 di.load([__dirname + "/**/*.js"], [__dirname + "/ignore_this_folder/**/*.js"]);
