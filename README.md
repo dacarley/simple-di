@@ -6,7 +6,7 @@ simple-di is a very basic dependency injection system for Node.js.
 
 ***constants.js***
 ```javascript
-var di = require('di');
+var di = require('simple-di');
 
 di.declare('Constants', function() {
     this.pi = 3.14159;
