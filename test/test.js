@@ -67,12 +67,28 @@ describe("simple-di", function() {
         expect(register_two).to.throw("A module named 'A' has already been registered!");
     });
 
-    it ("should allow for dependency renaming", function() {
-        di.register('A', { B: 'C'}, function(B) {});
+    it("should allow for dependency renaming", function() {
+        di.register('A', {
+            B: 'C'
+        }, function(B) {});
         di.register('C', function() {});
 
         var A = di.get('A');
         expect(A).to.exist;
+    });
+
+    it("should allow for invoking a function with injection", function() {
+        di.register('Math', function() {
+            this.square = function(x) {
+                return x*x;
+            };
+        })
+
+        var sixteen = di.invoke(function(Math) {
+            return Math.square(4);
+        });
+
+        expect(sixteen).to.equal(16);
     });
 
     describe("examples", function() {

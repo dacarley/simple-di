@@ -10,7 +10,55 @@ $ npm install simple-di --save
 
 Getting started is very simple.  Just create a couple node modules, require **simple-di**, register your modules, and consume them at will.
 
-Here's an example:
+See [Basic Usage Example](#basic-usage-example) for a quick "Getting Started" example.
+
+Currently, all modules registered with **simple-di** have a lifetime of 'app'.  This means that any module will be instantiated once and only once, and will live until your process exits.
+
+A future release of **simple-di**
+
+## API
+
+### di.register(name, func)
+
+Registers a module with the specified name, and uses the provided function as the constructor for the module instance.
+
+**simple-di** assumes that all parameters to the function are dependencies, and will attempt to resolve them when creating the module's instance.
+
+### di.get(name)
+
+Requests an instance of the module with the specified name.
+
+### di.load(patterns, patterns_to_ignore)
+
+Causes **simple-di** to load the specified files using [require](https://nodejs.org/api/modules.html#modules_module_require_id).  Typically would be used one time during your app's startup routines to load all your modules, giving them a chance to register themselves with **simple-di**.
+
+***patterns*** - this is a glob string, or an array of glob strings to match against.  The globs are matched using the path of the calling source file as the current working directory.  Any file that matches one of these patterns (and does not match one of the *patterns_to_ignore*) will be loaded by **simple-di**.
+
+***patterns_to_ignore*** - this is a glob string, or an array of glob strings that should be ignored.  Any files matching these patterns will *not* be loaded.
+
+### di.invoke(func)
+
+Causes **simple-di** to invoke *func*, satisfying its dependencies via injection.
+
+Provides an easy way to inject modules into a function, without needing to call **di.get(name)**.
+
+## Error Scenarios
+
+* **Multiple Registrations**
+	* If a module with the same name is registered more than once, **simple-di** will throw an exception.
+	* A future build of simple-di will provide a namespace feature that will allow for disambiguation of modules.
+
+* **Circular Dependencies**
+	* If a circular dependency is found when resolving a module, **simple-di** will throw an exception.
+	* See the [Circular Dependency Example](#circular-dependency-example) for an illustration of this scenario.
+	* Fixing these circular dependencies can typically be accomplished through refactoring the dependent modules, and extracting some of the functionality out into a new module.
+	* A future build of simple-di may provide the ability to automatically resolve these circular dependencies through the use of proxy objects.
+
+* **Unresolvable Dependencies**
+	* If a module could not be resolved while evaluating a dependency graph, **simple-di** will throw an exception.
+	* See the [Unresolvable Dependency Example](#unresolvable-dependency-example) for an illustration of this scenario.
+
+## Basic Usage Example
 
 ***constants.js***
 ```javascript
@@ -52,23 +100,6 @@ var circle = di.get('Circle');
 // Finally, use your 'circle' instance as you would any other Javascript object.
 console.log('A circle with a radius of 4 has an area of ' + circle.area(4));
 ```
-
-## Error Scenarios
-
-* **Multiple Registrations**
-	* If a module with the same name is registered more than once, **simple-di** will throw an exception.
-	* A future build of simple-di will provide a namespace feature that will allow for disambiguation of modules.
-
-* **Circular Dependencies**
-	* If a circular dependency is found when resolving a module, **simple-di** will throw an exception.
-	* See the [Circular Dependency Example](#circular-dependency-example) for an illustration of this scenario.
-	* Fixing these circular dependencies can typically be accomplished through refactoring the dependent modules, and extracting some of the functionality out into a new module.
-	* A future build of simple-di may provide the ability to automatically resolve these circular dependencies through the use of proxy objects.
-
-* **Unresolvable Dependencies**
-	* If a module could not be resolved while evaluating a dependency graph, **simple-di** will throw an exception.
-	* See the [Unresolvable Dependency Example](#unresolvable-dependency-example) for an illustration of this scenario.
-
 
 ## Circular Dependency Example
 

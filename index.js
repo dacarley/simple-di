@@ -10,7 +10,8 @@ var modules = {};
 module.exports = {
     get: get,
     register: register,
-    load: load
+    load: load,
+    invoke: invoke
 };
 
 function get(name) {
@@ -68,6 +69,28 @@ function load(patterns, patterns_to_ignore) {
     });
 }
 
+function get_function_name(func) {
+    var text = func.toString();
+    var space = text.indexOf(' ');
+    var open = text.indexOf('(');
+    var name = text.substring(space + 1, open);
+    return name || 'anonymous function';
+}
+
+function invoke(func) {
+    // Create a transient module for this function.
+    var module = {
+        name: 'simple di invoked function: ' + get_function_name(func),
+        mappings: {},
+        func: func
+    };
+
+    // Getting an instance of the transient module will cause 'func' to be invoked.
+    var instantiator = new Instantiator();
+    var value = instantiator.instantiate(module, { wrap_return : true });
+    return value.return_value;
+}
+
 function Instantiator() {
     var self = this;
 
@@ -86,7 +109,9 @@ function Instantiator() {
         return module.instance;
     };
 
-    self.instantiate = function(module) {
+    self.instantiate = function(module, options) {
+        options = options || {};
+
         var index = _.findIndex(self.stack, function(item) {
             return item === module.name;
         });
@@ -98,7 +123,15 @@ function Instantiator() {
         self.stack.push(module.name);
 
         function factory(args) {
-            return module.func.apply(this, args);
+            var value = module.func.apply(this, args);
+
+            if (options.wrap_return) {
+                value = {
+                    return_value: value
+                };
+            }
+
+            return value;
         }
 
         factory.prototype = module.func.prototype;
