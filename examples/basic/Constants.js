@@ -2,6 +2,6 @@
 
 var di = require('../../index.js');
 
-di.declare('Constants', function() {
+di.register('Constants', function() {
 	this.pi = 3.14159;
 });

@@ -9,7 +9,7 @@ var modules = {};
 
 module.exports = {
     get: get,
-    declare: declare,
+    register: register,
     load: load
 };
 
@@ -18,7 +18,7 @@ function get(name) {
     return instantiator.get(name);
 }
 
-function declare(name, func) {
+function register(name, func) {
     if (modules[name]) {
         throw new Error("A module named '" + name + "' has already been registered!");
     }
@@ -76,23 +76,36 @@ function Instantiator() {
         return module.instance;
     };
 
-    self.get_dependency_chain = function(name, start) {
-        self.stack.push(name);
-        return self.stack.slice(start || 0).join(' -> ');
-    };
-
-    self.instantiate = function instantiate(module) {
+    self.instantiate = function(module) {
         var index = _.findIndex(self.stack, function(item) {
             return item === module.name;
         });
 
         if (index >= 0) {
-            throw new Error("Circular dependency found! " + self.get_dependency_chain(module.name, index));
+            throw new Error("Circular dependency found! " + get_dependency_chain(module.name, index));
         }
 
         self.stack.push(module.name);
 
-        var text = module.func.toString();
+        function factory(args) {
+            return module.func.apply(this, args);
+        }
+
+        factory.prototype = module.func.prototype;
+
+        var params = get_params(module.func);
+        var instance = new factory(params);
+        module.instantiating = false;
+        return instance;
+    };
+
+    function get_dependency_chain(name, start) {
+        self.stack.push(name);
+        return self.stack.slice(start || 0).join(' -> ');
+    };
+
+    function get_params(func) {
+        var text = func.toString();
         var open = text.indexOf('(');
         var close = text.indexOf(')');
         var params_text = text.substring(open + 1, close);
@@ -105,22 +118,14 @@ function Instantiator() {
             .value();
 
         var params = _.map(param_names, function(param_name) {
-                var param = self.get(param_name);
-                if (!param) {
-                    throw new Error("Could not resolve '" + param_name + "'! " + self.get_dependency_chain(param_name));
-                }
+            var param = self.get(param_name);
+            if (!param) {
+                throw new Error("Could not resolve '" + param_name + "'! " + get_dependency_chain(param_name));
+            }
 
-                return param;
-            });
+            return param;
+        });
 
-        function factory(args) {
-            return module.func.apply(this, args);
-        }
-
-        factory.prototype = module.func.prototype;
-
-        var instance = new factory(params);
-        module.instantiating = false;
-        return instance;
-    };
+        return params;
+    }
 }

@@ -2,6 +2,6 @@
 
 var di = require('../../index.js');
 
-di.declare('B', function(C) {
+di.register('B', function(C) {
 	this.ping = C.ping;
 });
