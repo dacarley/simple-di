@@ -8,7 +8,7 @@ simple-di is a very basic dependency injection system for Node.js.
 ```javascript
 var di = require('simple-di');
 
-di.declare('Constants', function() {
+di.register('Constants', function() {
 	this.pi = 3.14159;
 });
 ```
@@ -17,7 +17,7 @@ di.declare('Constants', function() {
 ```javascript
 var di = require('simple-di');
 
-di.declare('Circle', function(Constants) {
+di.register('Circle', function(Constants) {
 	this.area = function(radius) {
 		return Constants.pi * radius * radius;
 	};
@@ -39,7 +39,7 @@ console.log('A circle with a radius of 4 has an area of ' + circle.area(4));
 
 **simple-di** will throw an exception if:
 
-* A module is multiply declared
+* A module is multiply registered
 * A circular dependencies.
 	* Resolving these circular dependencies can typically be accomplished through refactoring the dependent modules, and extracting some of the functionality out into a new module.
 * A module could not be resolved in a dependency chain.
