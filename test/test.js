@@ -39,7 +39,7 @@ describe("simple-di", function() {
             var A = di.get('A');
         }
 
-        expect(getA).to.throw(Error);
+        expect(getA).to.throw("Circular dependency found! A -> B -> A");
     });
 
     it("should throw an exception if there is an unresolved dependency", function() {
@@ -52,7 +52,7 @@ describe("simple-di", function() {
             var A = di.get('A');
         }
 
-        expect(getA).to.throw(Error);
+        expect(getA).to.throw("Could not resolve 'C'! A -> B -> C");
     });
 
     it("should throw an exception if the same module is declared multiple times", function() {
@@ -65,6 +65,14 @@ describe("simple-di", function() {
         }
 
         expect(register_two).to.throw("A module named 'A' has already been registered!");
+    });
+
+    it ("should allow for dependency renaming", function() {
+        di.register('A', { B: 'C'}, function(B) {});
+        di.register('C', function() {});
+
+        var A = di.get('A');
+        expect(A).to.exist;
     });
 
     describe("examples", function() {

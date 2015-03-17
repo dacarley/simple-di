@@ -18,13 +18,23 @@ function get(name) {
     return instantiator.get(name);
 }
 
-function register(name, func) {
+function register(name) {
     if (modules[name]) {
         throw new Error("A module named '" + name + "' has already been registered!");
     }
 
+    var mappings = {};
+    var func;
+    if (_.isFunction(arguments[1])) {
+        func = arguments[1];
+    } else {
+        mappings = arguments[1];
+        func = arguments[2];
+    }
+
     modules[name] = {
         name: name,
+        mappings: mappings,
         func: func
     }
 }
@@ -93,7 +103,7 @@ function Instantiator() {
 
         factory.prototype = module.func.prototype;
 
-        var params = get_params(module.func);
+        var params = get_params(module.func, module.mappings);
         var instance = new factory(params);
         module.instantiating = false;
         return instance;
@@ -104,7 +114,7 @@ function Instantiator() {
         return self.stack.slice(start || 0).join(' -> ');
     };
 
-    function get_params(func) {
+    function get_params(func, mappings) {
         var text = func.toString();
         var open = text.indexOf('(');
         var close = text.indexOf(')');
@@ -118,6 +128,7 @@ function Instantiator() {
             .value();
 
         var params = _.map(param_names, function(param_name) {
+            param_name = mappings[param_name] || param_name;
             var param = self.get(param_name);
             if (!param) {
                 throw new Error("Could not resolve '" + param_name + "'! " + get_dependency_chain(param_name));
