@@ -30,6 +30,7 @@
   "dependencies": {
     "caller": "^1.0.0",
     "glob": "^5.0.3",
+    "intercept-stdout": "0.0.3",
     "lodash": "^3.5.0"
   },
   "devDependencies": {

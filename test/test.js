@@ -1,12 +1,24 @@
+var _ = require('lodash');
 var expect = require('chai').expect;
+var intercept = require('intercept-stdout');
 
 describe("simple-di", function() {
     var di;
+    var require_cache_keys;
 
     beforeEach(function() {
-        // Ensure that the 'simple-di' module is reloaded before each test.
-        delete require.cache[require.resolve('../index.js')];
+        // Take a snapshot of the currently 'require'd modules, so we can remove anything that gets require'd during this test run.
+        require_cache_keys = _.keys(require.cache);
         di = require('../index.js');
+    });
+
+    afterEach(function() {
+        // Remove any files that have been require'd during this test run.
+        var new_keys = _.keys(require.cache);
+        var added = _.difference(new_keys, require_cache_keys);
+        _.each(added, function(key) {
+            delete require.cache[key];
+        });
     });
 
     it("should not find a module that isn't defined", function() {
@@ -48,10 +60,49 @@ describe("simple-di", function() {
         expect(A).to.not.exist;
 
         function register_two() {
-            di.declare('A', function() {});
-            di.declare('A', function() {});
+            di.register('A', function() {});
+            di.register('A', function() {});
         }
 
-        expect(register_two).to.throw(Error);
+        expect(register_two).to.throw("A module named 'A' has already been registered!");
+    });
+
+    describe("examples", function() {
+        describe("basic", function() {
+            it("should succeeed", function() {
+                function basic() {
+                    var app = require('../examples/basic/app.js');
+                }
+
+                var captured_text = "";
+                var unhook_intercept = intercept(function(txt) {
+                    captured_text += txt;
+                });
+
+                expect(basic).to.not.throw();
+                expect(captured_text).to.equal("A circle with a radius of 4 has an area of 50.26544\n");
+                unhook_intercept();
+            });
+        });
+
+        describe("circular", function() {
+            it("should throw an exception", function() {
+                function circular() {
+                    var app = require('../examples/circular/app.js');
+                }
+
+                expect(circular).to.throw("Circular dependency found! A -> B -> A");
+            });
+        });
+
+        describe("unresolvable", function() {
+            it("should throw an exception", function() {
+                function unresolvable() {
+                    var app = require('../examples/unresolvable/app.js');
+                }
+
+                expect(unresolvable).to.throw("Could not resolve 'C'! A -> B -> C");
+            });
+        });
     });
 });
