@@ -14,8 +14,6 @@ See [Basic Usage Example](#basic-usage-example) for a quick "Getting Started" ex
 
 Currently, all modules registered with **simple-di** have a lifetime of 'app'.  This means that any module will be instantiated once and only once, and will live until your process exits.
 
-A future release of **simple-di**
-
 ## API
 
 ### di.register(name, func)
