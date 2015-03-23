@@ -22,6 +22,10 @@ Registers a module with the specified name, and uses the provided function as th
 
 **simple-di** assumes that all parameters to the function are dependencies, and will attempt to resolve them when creating the module's instance.
 
+### di.mock(name, func)
+
+Exists to satisfy unit test scenarios.  This function allows you to override an already-registered module with a mock-object, for testing purposes.  Should not be used in production code.
+
 ### di.get(name)
 
 Requests an instance of the module with the specified name.

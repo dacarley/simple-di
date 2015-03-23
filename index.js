@@ -1,4 +1,4 @@
-'use string';
+'use strict';
 
 var _ = require('lodash');
 var glob = require('glob');
@@ -7,19 +7,14 @@ var path = require('path');
 
 var modules = {};
 
-module.exports = {
-    get: get,
-    register: register,
-    load: load,
-    invoke: invoke
-};
+var vm = {};
 
-function get(name) {
+vm.get = function(name) {
     var instantiator = new Instantiator();
     return instantiator.get(name);
-}
+};
 
-function register(name) {
+vm.register = function(name) {
     if (modules[name]) {
         throw new Error("A module named '" + name + "' has already been registered!");
     }
@@ -37,10 +32,18 @@ function register(name) {
         name: name,
         mappings: mappings,
         func: func
-    }
-}
+    };
+};
 
-function load(patterns, patterns_to_ignore) {
+vm.mock = function(name, func) {
+    modules[name] = {
+        name: name,
+        mappings: {},
+        func: func
+    };
+};
+
+vm.load = function(patterns, patterns_to_ignore) {
     if (!_.isArray(patterns)) {
         patterns = [patterns];
     }
@@ -67,7 +70,7 @@ function load(patterns, patterns_to_ignore) {
             require(file);
         });
     });
-}
+};
 
 function get_function_name(func) {
     var text = func.toString();
@@ -77,7 +80,7 @@ function get_function_name(func) {
     return name || 'anonymous function';
 }
 
-function invoke(func) {
+vm.invoke = function(func) {
     // Create a transient module for this function.
     var module = {
         name: 'simple di invoked function: ' + get_function_name(func),
@@ -87,9 +90,11 @@ function invoke(func) {
 
     // Getting an instance of the transient module will cause 'func' to be invoked.
     var instantiator = new Instantiator();
-    var value = instantiator.instantiate(module, { wrap_return : true });
+    var value = instantiator.instantiate(module, {
+        wrap_return: true
+    });
     return value.return_value;
-}
+};
 
 function Instantiator() {
     var self = this;
@@ -122,7 +127,7 @@ function Instantiator() {
 
         self.stack.push(module.name);
 
-        function factory(args) {
+        function Factory(args) {
             var value = module.func.apply(this, args);
 
             if (options.wrap_return) {
@@ -134,10 +139,10 @@ function Instantiator() {
             return value;
         }
 
-        factory.prototype = module.func.prototype;
+        Factory.prototype = module.func.prototype;
 
         var params = get_params(module.func, module.mappings);
-        var instance = new factory(params);
+        var instance = new Factory(params);
         module.instantiating = false;
         return instance;
     };
@@ -145,7 +150,7 @@ function Instantiator() {
     function get_dependency_chain(name, start) {
         self.stack.push(name);
         return self.stack.slice(start || 0).join(' -> ');
-    };
+    }
 
     function get_params(func, mappings) {
         var text = func.toString();
@@ -155,7 +160,7 @@ function Instantiator() {
         var param_names = _(params_text.split(','))
             .map(function(param_name) {
                 param_name = param_name.trim();
-                return param_name == "" ? null : param_name;
+                return param_name === "" ? null : param_name;
             })
             .compact()
             .value();
@@ -173,3 +178,5 @@ function Instantiator() {
         return params;
     }
 }
+
+module.exports = vm;

@@ -1,6 +1,11 @@
+'use strict';
+
 var _ = require('lodash');
 var expect = require('chai').expect;
 var intercept = require('intercept-stdout');
+
+/*jshint -W030 */   // Expected an assignment or function call and instead saw an expression
+/*jshint -W098 */   // {var} is defined but never used
 
 describe("simple-di", function() {
     var di;
@@ -36,7 +41,7 @@ describe("simple-di", function() {
         di.load("../examples/circular/**/*.js", "../examples/circular/app.js");
 
         function getA() {
-            var A = di.get('A');
+            return di.get('A');
         }
 
         expect(getA).to.throw("Circular dependency found! A -> B -> A");
@@ -49,7 +54,7 @@ describe("simple-di", function() {
         di.load("../examples/unresolvable/**/*.js", "../examples/unresolvable/app.js");
 
         function getA() {
-            var A = di.get('A');
+            return di.get('A');
         }
 
         expect(getA).to.throw("Could not resolve 'C'! A -> B -> C");
@@ -82,7 +87,7 @@ describe("simple-di", function() {
             this.square = function(x) {
                 return x*x;
             };
-        })
+        });
 
         var sixteen = di.invoke(function(Math) {
             return Math.square(4);

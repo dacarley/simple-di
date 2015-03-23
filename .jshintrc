@@ -1,0 +1,33 @@
+{
+    "asi": false,
+    "bitwise": true,
+    "curly": false,
+    "eqeqeq": true,
+    "forin": true,
+    "freeze": true,
+    "immed": true,
+    "indent": 2,
+    "latedef": "nofunc",
+    "laxcomma": true,
+    "maxcomplexity": 10,
+    "maxdepth": 5,
+    "maxparams": 10,
+    "maxstatements": 25,
+    "newcap": true,
+    "noarg": true,
+    "node": true,
+    "noempty": true,
+    "nonbsp": true,
+    "nonew": true,
+    "trailing": true,
+    "undef": true,
+    "unused": true,
+    "strict": true,
+    "validthis": true,
+    "globals": {
+        "describe": false,
+        "it": false,
+        "beforeEach": false,
+        "afterEach": false
+    }
+}
