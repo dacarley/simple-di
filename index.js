@@ -14,23 +14,19 @@ vm.get = function(name) {
     return instantiator.get(name);
 };
 
-vm.register = function(name) {
+vm.registerTransient = function(name, func) {
+    vm.register(name, func);
+    modules[name].options.transient = true;
+};
+
+vm.register = function(name, func) {
     if (modules[name]) {
         throw new Error("A module named '" + name + "' has already been registered!");
     }
 
-    var mappings = {};
-    var func;
-    if (_.isFunction(arguments[1])) {
-        func = arguments[1];
-    } else {
-        mappings = arguments[1];
-        func = arguments[2];
-    }
-
     modules[name] = {
         name: name,
-        mappings: mappings,
+        options: {},
         func: func
     };
 };
@@ -38,7 +34,7 @@ vm.register = function(name) {
 vm.mock = function(name, func) {
     modules[name] = {
         name: name,
-        mappings: {},
+        options: {},
         func: func
     };
 };
@@ -84,7 +80,7 @@ vm.invoke = function(func) {
     // Create a transient module for this function.
     var module = {
         name: 'simple di invoked function: ' + get_function_name(func),
-        mappings: {},
+        options: {},
         func: func
     };
 
@@ -107,11 +103,15 @@ function Instantiator() {
             return undefined;
         }
 
-        if (!module.instance) {
-            module.instance = self.instantiate(module);
+        var instance = module.instance;
+        if (!instance) {
+            instance = self.instantiate(module);
+            if (!module.options.transient) {
+                module.instance = instance;
+            }
         }
 
-        return module.instance;
+        return instance;
     };
 
     self.instantiate = function(module, options) {
@@ -141,7 +141,7 @@ function Instantiator() {
 
         Factory.prototype = module.func.prototype;
 
-        var params = get_params(module.func, module.mappings);
+        var params = get_params(module.func);
         var instance = new Factory(params);
         module.instantiating = false;
         return instance;
@@ -152,7 +152,7 @@ function Instantiator() {
         return self.stack.slice(start || 0).join(' -> ');
     }
 
-    function get_params(func, mappings) {
+    function get_params(func) {
         var text = func.toString();
         var open = text.indexOf('(');
         var close = text.indexOf(')');
@@ -166,7 +166,6 @@ function Instantiator() {
             .value();
 
         var params = _.map(param_names, function(param_name) {
-            param_name = mappings[param_name] || param_name;
             var param = self.get(param_name);
             if (!param) {
                 throw new Error("Could not resolve '" + param_name + "'! " + get_dependency_chain(param_name));

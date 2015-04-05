@@ -72,16 +72,6 @@ describe("simple-di", function() {
         expect(register_two).to.throw("A module named 'A' has already been registered!");
     });
 
-    it("should allow for dependency renaming", function() {
-        di.register('A', {
-            B: 'C'
-        }, function(B) {});
-        di.register('C', function() {});
-
-        var A = di.get('A');
-        expect(A).to.exist;
-    });
-
     it("should allow for invoking a function with injection", function() {
         di.register('Math', function() {
             this.square = function(x) {
@@ -94,6 +84,25 @@ describe("simple-di", function() {
         });
 
         expect(sixteen).to.equal(16);
+    });
+
+    it("should allow registering a transient service", function() {
+        di.registerTransient('Clock', function() {
+            var timestamp = new Date();
+            this.timestamp = function() {
+                return timestamp;
+            };
+        });
+
+        var timestamp_1 = di.invoke(function(Clock) {
+            return Clock.timestamp();
+        });
+
+        var timestamp_2 = di.invoke(function(Clock) {
+            return Clock.timestamp();
+        });
+
+        expect(timestamp_1).to.not.equal(timestamp_2);
     });
 
     describe("examples", function() {
