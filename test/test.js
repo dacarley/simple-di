@@ -4,8 +4,8 @@ var _ = require('lodash');
 var expect = require('chai').expect;
 var intercept = require('intercept-stdout');
 
-/*jshint -W030 */   // Expected an assignment or function call and instead saw an expression
-/*jshint -W098 */   // {var} is defined but never used
+/*jshint -W030 */ // Expected an assignment or function call and instead saw an expression
+/*jshint -W098 */ // {var} is defined but never used
 
 describe("simple-di", function() {
     var di;
@@ -75,7 +75,7 @@ describe("simple-di", function() {
     it("should allow for invoking a function with injection", function() {
         di.register('Math', function() {
             this.square = function(x) {
-                return x*x;
+                return x * x;
             };
         });
 
@@ -86,23 +86,56 @@ describe("simple-di", function() {
         expect(sixteen).to.equal(16);
     });
 
-    it("should allow registering a transient service", function() {
-        di.registerTransient('Clock', function() {
-            var timestamp = new Date();
-            this.timestamp = function() {
-                return timestamp;
+    it("should allow for tagging", function() {
+        di.register('FirstNames (NameSource, FirstNames)', function() {
+            this.getNames = function() {
+                return ['Dave', 'Chris'];
             };
         });
 
-        var timestamp_1 = di.invoke(function(Clock) {
-            return Clock.timestamp();
+        di.register('LastNames (NameSource)', function() {
+            this.getNames = function() {
+                return ['Carley', 'Bergstrom'];
+            };
         });
 
-        var timestamp_2 = di.invoke(function(Clock) {
-            return Clock.timestamp();
+        var sources = di.getByTag('NameSource');
+
+        expect(sources).to.be.instanceOf(Array);
+        expect(sources.length).to.equal(2);
+
+        var names = _.map(sources, function(source) {
+            return source.getNames();
+        });
+        names = _.flatten(names);
+
+        expect(names).to.have.members(['Dave', 'Chris', 'Carley', 'Bergstrom']);
+    });
+
+    it("should allow for tagging with multiple tags", function() {
+        di.register('FirstNames (NameSource, FirstNameSource)', function() {
+            this.getNames = function() {
+                return ['Dave', 'Chris'];
+            };
         });
 
-        expect(timestamp_1).to.not.equal(timestamp_2);
+        di.register('LastNames (NameSource)', function() {
+            this.getNames = function() {
+                return ['Carley', 'Bergstrom'];
+            };
+        });
+
+        var sources = di.getByTag('FirstNameSource');
+
+        expect(sources).to.be.instanceOf(Array);
+        expect(sources.length).to.equal(1);
+
+        var names = _.map(sources, function(source) {
+            return source.getNames();
+        });
+        names = _.flatten(names);
+
+        expect(names).to.have.members(['Dave', 'Chris']);
     });
 
     describe("examples", function() {

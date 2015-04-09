@@ -14,12 +14,28 @@ vm.get = function(name) {
     return instantiator.get(name);
 };
 
-vm.registerTransient = function(name, func) {
-    vm.register(name, func);
-    modules[name].options.transient = true;
+vm.getByTag = function(tag) {
+    var instances = _(modules)
+        .filter(function(module) {
+            return _.contains(module.tags, tag);
+        })
+        .map(function(module) {
+            return module.name;
+        })
+        .map(vm.get)
+        .value();
+
+    return instances;
 };
 
 vm.register = function(name, func) {
+    var matches = name.match(/\s*([^(\s]*)\s*(\([^)]*\))?/);
+    name = matches[1];
+    var tags = _.trim(matches[2] || '', '()').split(',');
+    tags = _.map(tags, function(tag) {
+        return tag.trim();
+    });
+
     if (modules[name]) {
         throw new Error("A module named '" + name + "' has already been registered!");
     }
@@ -27,6 +43,7 @@ vm.register = function(name, func) {
     modules[name] = {
         name: name,
         options: {},
+        tags: tags,
         func: func
     };
 };
