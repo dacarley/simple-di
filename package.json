@@ -9,7 +9,12 @@
   },
   "keywords": [
     "node",
-    "di"
+    "di",
+    "dependency-injection",
+    "dependency injection",
+    "ioc",
+    "inversion of control",
+    "container"
   ],
   "repository": {
     "type": "git",
@@ -24,19 +29,18 @@
     "node": ">= 0.10.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "eslint . && mocha"
   },
   "license": "BSD-3-Clause",
   "dependencies": {
-    "caller": "^1.0.0",
-    "glob": "^5.0.3",
-    "lodash": "^3.5.0"
+    "caller": "^1.0.1",
+    "glob": "^5.0.15",
+    "lodash": "^3.10.1"
   },
   "devDependencies": {
-    "chai": "^2.1.2",
-    "gulp": "^3.8.11",
-    "gulp-jasmine": "^2.0.0",
-    "mocha": "^2.2.1",
-    "intercept-stdout": "0.0.3"
+    "chai": "^3.3.0",
+    "eslint": "^1.5.1",
+    "intercept-stdout": "0.1.2",
+    "mocha": "^2.3.3"
   }
 }

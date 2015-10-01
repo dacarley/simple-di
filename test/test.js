@@ -1,7 +1,9 @@
 'use strict';
 
 var _ = require('lodash');
-var expect = require('chai').expect;
+var chai = require('chai');
+var expect = chai.expect;
+chai.should();
 var intercept = require('intercept-stdout');
 
 /*jshint -W030 */ // Expected an assignment or function call and instead saw an expression
@@ -101,8 +103,7 @@ describe("simple-di", function() {
 
         var sources = di.getByTag('NameSource');
 
-        expect(sources).to.be.instanceOf(Array);
-        expect(sources.length).to.equal(2);
+        sources.should.have.keys('FirstNames', 'LastNames')
 
         var names = _.map(sources, function(source) {
             return source.getNames();
@@ -127,8 +128,7 @@ describe("simple-di", function() {
 
         var sources = di.getByTag('FirstNameSource');
 
-        expect(sources).to.be.instanceOf(Array);
-        expect(sources.length).to.equal(1);
+        sources.should.have.keys('FirstNames');
 
         var names = _.map(sources, function(source) {
             return source.getNames();
@@ -142,7 +142,7 @@ describe("simple-di", function() {
         describe("basic", function() {
             it("should succeeed", function() {
                 function basic() {
-                    var app = require('../examples/basic/app.js');
+                    require('../examples/basic/app.js');
                 }
 
                 var captured_text = "";
@@ -159,7 +159,7 @@ describe("simple-di", function() {
         describe("circular", function() {
             it("should throw an exception", function() {
                 function circular() {
-                    var app = require('../examples/circular/app.js');
+                    require('../examples/circular/app.js');
                 }
 
                 expect(circular).to.throw("Circular dependency found! A -> B -> A");
@@ -169,7 +169,7 @@ describe("simple-di", function() {
         describe("unresolvable", function() {
             it("should throw an exception", function() {
                 function unresolvable() {
-                    var app = require('../examples/unresolvable/app.js');
+                    require('../examples/unresolvable/app.js');
                 }
 
                 expect(unresolvable).to.throw("Could not resolve 'C'! A -> B -> C");

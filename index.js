@@ -20,9 +20,9 @@ vm.getByTag = function(tag) {
             return _.contains(module.tags, tag);
         })
         .map(function(module) {
-            return module.name;
+            return [module.name, vm.get(module.name)];
         })
-        .map(vm.get)
+        .zipObject()
         .value();
 
     return instances;
