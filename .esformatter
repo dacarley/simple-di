@@ -1,0 +1,34 @@
+{
+  "root": true,
+  "indent": {
+    "value": "    "
+  },
+  "plugins": [
+    "esformatter-braces",
+    "esformatter-quotes",
+    "esformatter-semicolons",
+    "esformatter-dot-notation",
+    "esformatter-literal-notation",
+    "esformatter-var-each",
+    "esformatter-eol-last",
+    "esformatter-spaced-lined-comment",
+    "esformatter-remove-trailing-commas",
+    "esformatter-quote-props"
+  ],
+  "lineBreak": {
+    "before": {
+      "ObjectPatternClosingBrace": 1,
+      "FunctionDeclaration" : "2"
+    },
+    "after": {
+        "ObjectPatternOpeningBrace": 1,
+        "ObjectPatternComma": 1,
+        "ArrayPatternOpening": 1,
+        "ArrayPatternComma": 1
+    }
+  },
+  "quotes": {
+      "type": "double",
+      "avoidEscape": true
+  }
+}

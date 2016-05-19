@@ -35,7 +35,7 @@
   "dependencies": {
     "caller": "^1.0.1",
     "glob": "^5.0.15",
-    "lodash": "^3.10.1"
+    "lodash": "^4.12.0"
   },
   "devDependencies": {
     "chai": "^3.3.0",

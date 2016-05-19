@@ -20,15 +20,28 @@ Currently, all modules registered with **simple-di** have a lifetime of 'app'.  
 
 Registers a module with the specified name, and uses the provided function as the constructor for the module instance.
 
+The name of the module must be a valid Javascript identifier.  However, it may be followed with a parenthesized list of "tags".
+
+```
+di.register("UserRepository (Repository, DatabaseModule)", function() {});
+```
+
+These tags can be used in a later call to **getByTag**.
+
 **simple-di** assumes that all parameters to the function are dependencies, and will attempt to resolve them when creating the module's instance.
 
-### di.mock(name, func)
+### di.registerTransient(name, func)
 
-Exists to satisfy unit test scenarios.  This function allows you to override an already-registered module with a mock-object, for testing purposes.  Should not be used in production code.
+Registers a *transient* module with the specified name, and uses the provided function as the constructor for the module instance.
+A *transient* module is one that is instantiated every time it is needed, rather than a reusing a single application-wide instance.
 
 ### di.get(name)
 
-Requests an instance of the module with the specified name.
+An instance of the module with the specified name will be returned.
+
+### di.getByTag(tag)
+
+A map containing every module registered with the given tag will be returned.  The map will contain `name: instance` pairs for every module that matched the tag.
 
 ### di.load(patterns, patterns_to_ignore)
 
@@ -202,3 +215,9 @@ var A = di.get('A');
 console.log('This line will never be reached.');
 
 ```
+
+## Special parameters
+
+### "__Owner"
+
+If a module is registered via **registerTransient**, it may depend upon a special parameter named **__Owner**.  This parameter will be injected with the name of the module that requested the current transient instance of the module.
