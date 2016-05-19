@@ -169,9 +169,11 @@ function Instantiator() {
 
         Factory.prototype = module.func.prototype;
 
-        var params = get_params(module.func);
+        var params = get_params(module);
+
         var instance = new Factory(params);
-        module.instantiating = false;
+        self.stack.pop();
+
         return instance;
     };
 
@@ -180,7 +182,8 @@ function Instantiator() {
         return self.stack.slice(start || 0).join(" -> ");
     }
 
-    function get_params(func) {
+    function get_params(module) {
+        var func = module.func;
         var text = func.toString();
         var open = text.indexOf("(");
         var close = text.indexOf(")");
@@ -195,7 +198,7 @@ function Instantiator() {
 
         var params = _.map(param_names, function(param_name) {
             var param;
-            if (param_name === "__Owner") {
+            if (module.options.transient && param_name === "__Owner") {
                 param = _.nth(self.stack, -2);
             } else {
                 param = self.getInstance(param_name);

@@ -165,7 +165,13 @@ describe("simple-di", function() {
             };
         });
 
-        var singleton = di.get("MySingleton");
+        di.register("AnotherSingleton", function(MySingleton) {
+            this.getTransientOwner = function() {
+                return MySingleton.getTransientOwner();
+            }
+        });
+
+        var singleton = di.get("AnotherSingleton");
 
         singleton.getTransientOwner().should.equal("MySingleton");
     });
