@@ -34,13 +34,13 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "caller": "^1.0.1",
-    "glob": "^5.0.15",
-    "lodash": "^4.12.0"
+    "glob": "^7.0.3",
+    "lodash": "^4.13.1"
   },
   "devDependencies": {
-    "chai": "^3.3.0",
-    "eslint": "^1.5.1",
+    "chai": "^3.5.0",
+    "eslint": "^2.11.0",
     "intercept-stdout": "0.1.2",
-    "mocha": "^2.3.3"
+    "mocha": "^2.5.3"
   }
 }

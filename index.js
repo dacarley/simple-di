@@ -1,9 +1,8 @@
 "use strict";
 
 var _ = require("lodash");
-var glob = require("glob");
-var caller = require("caller");
-var path = require("path");
+var loader = require("./loader");
+var Instantiator = require("./Instantiator");
 
 var modules = {};
 
@@ -12,12 +11,12 @@ module.exports = {
     getByTag: getByTag,
     register: register,
     registerTransient: registerTransient,
-    load: load,
+    load: loader.load,
     invoke: invoke
 };
 
 function getInstance(name) {
-    var instantiator = new Instantiator();
+    var instantiator = new Instantiator(modules);
     return instantiator.getInstance(name);
 }
 
@@ -63,38 +62,11 @@ function registerCore(name, func, transient) {
         tags: tags,
         func: func
     };
+
+    var end = Date.now();
 }
 
-function load(patterns, patterns_to_ignore) {
-    if (!_.isArray(patterns)) {
-        patterns = [patterns];
-    }
-
-    if (!_.isArray(patterns_to_ignore)) {
-        patterns_to_ignore = [patterns_to_ignore];
-    }
-
-    var cwd = path.dirname(caller());
-
-    // Fix up all the ignore patterns.
-    patterns_to_ignore = _.map(patterns_to_ignore, function(pattern) {
-        return path.resolve(cwd + "/" + pattern);
-    });
-
-    patterns.forEach(function(pattern) {
-        var files = glob.sync(pattern, {
-            nodir: true,
-            cwd: cwd,
-            ignore: patterns_to_ignore,
-            realpath: true
-        });
-        files.forEach(function(file) {
-            require(file);
-        });
-    });
-}
-
-function get_function_name(func) {
+function getFunctionName(func) {
     var text = func.toString();
     var space = text.indexOf(" ");
     var open = text.indexOf("(");
@@ -105,7 +77,7 @@ function get_function_name(func) {
 function invoke(func) {
     // Create a transient module for this function.
     var module = {
-        name: "simple di invoked function: " + get_function_name(func),
+        name: "simple di invoked function: " + getFunctionName(func),
         options: {
             transient: true
         },
@@ -113,104 +85,9 @@ function invoke(func) {
     };
 
     // Getting an instance of the transient module will cause 'func' to be invoked.
-    var instantiator = new Instantiator();
+    var instantiator = new Instantiator(modules);
     var value = instantiator.instantiate(module, {
         wrap_return: true
     });
     return value.return_value;
-}
-
-function Instantiator() {
-    var self = this;
-
-    self.stack = [];
-
-    self.getInstance = function(name) {
-        var module = modules[name];
-        if (!module) {
-            return undefined;
-        }
-
-        var instance = module.instance;
-        if (!instance) {
-            instance = self.instantiate(module);
-            if (!module.options.transient) {
-                module.instance = instance;
-            }
-        }
-
-        return instance;
-    };
-
-    self.instantiate = function(module, options) {
-        options = options || {};
-
-        var index = _.findIndex(self.stack, function(item) {
-            return item === module.name;
-        });
-
-        if (index >= 0) {
-            throw new Error("Circular dependency found! " + get_dependency_chain(module.name, index));
-        }
-
-        self.stack.push(module.name);
-
-        function Factory(args) {
-            var value = module.func.apply(this, args);
-
-            if (options.wrap_return) {
-                value = {
-                    return_value: value
-                };
-            }
-
-            return value;
-        }
-
-        Factory.prototype = module.func.prototype;
-
-        var params = get_params(module);
-
-        var instance = new Factory(params);
-        self.stack.pop();
-
-        return instance;
-    };
-
-    function get_dependency_chain(name, start) {
-        self.stack.push(name);
-        return self.stack.slice(start || 0).join(" -> ");
-    }
-
-    function get_params(module) {
-        var func = module.func;
-        var text = func.toString();
-        var open = text.indexOf("(");
-        var close = text.indexOf(")");
-        var params_text = text.substring(open + 1, close);
-        var param_names = _(params_text.split(","))
-            .map(function(param_name) {
-                param_name = param_name.trim();
-                return param_name === "" ? null : param_name;
-            })
-            .compact()
-            .value();
-
-        var params = _.map(param_names, function(param_name) {
-            var param;
-            if (module.options.transient && param_name === "__Owner") {
-                param = _.nth(self.stack, -2);
-            } else {
-                param = self.getInstance(param_name);
-            }
-
-            if (!param) {
-                throw new Error("Could not resolve '" + param_name + "'! " + get_dependency_chain(param_name));
-            }
-
-            return param;
-        });
-
-        return params;
-    }
 }
