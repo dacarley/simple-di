@@ -2,7 +2,7 @@
 
 var _ = require("lodash");
 var loader = require("./loader");
-var Instantiator = require("./Instantiator");
+var Instantiator = require("./instantiator");
 
 var modules = {};
 
